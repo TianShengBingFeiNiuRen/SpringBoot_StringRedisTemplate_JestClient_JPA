@@ -1,0 +1,38 @@
+#server:
+#  port: 8888
+spring:
+  main:
+    web-application-type: none
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: ######:3306/block?useUnicode=true&characterEncoding=utf-8
+    username: ######
+    password: ######
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+  redis:
+    host: ##.###.###.#
+    port: 6379
+    password: ######
+  elasticsearch:
+    jest:
+      uris: http://##.###.###.###:###,http://##.###.###.###:###,http://##.###.###.###:###,http://##.###.###.###:###,http://##.###.###.###:###
+
+redis:
+  key:
+    macdSignal: stock_market_macd_signaling
+
+es:
+  index:
+    macdData: stock_market_macd_data
+    macdSignal: stock_market_macd_result
+    macdExpectedPrice: stock_market_macd_expected_price
+    macdResonance: stock_market_macd_resonance
+
+kLineDifference_4: 4
+kLineDifference_7: 7
+
+email:
+  address:

@@ -1,0 +1,31 @@
+package com.blockchaindata.stockmarketcommon.util;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+/**
+ * @author Andon
+ * @date 2019/2/19
+ */
+public class TimeUtil {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TimeUtil.class);
+    public static final ThreadLocal<SimpleDateFormat> FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+    public static final ThreadLocal<SimpleDateFormat> FORMAT_HOUR = ThreadLocal.withInitial(() -> new SimpleDateFormat("HH"));
+    public static final ThreadLocal<SimpleDateFormat> FORMAT_MIN = ThreadLocal.withInitial(() -> new SimpleDateFormat("mm"));
+
+    public static long getTimeId(String time) {
+        long timeId = 0;
+        try {
+            Date date = FORMAT.get().parse(time);
+            timeId = date.getTime() / 1000;
+        } catch (ParseException e) {
+            LOG.error("FORMAT parse time failure!! error={}", e.getMessage());
+        }
+        return timeId;
+    }
+}
