@@ -15,6 +15,7 @@ Spring Boot 整合 StringRedisTemplate + JestClient + JPA
             <version>2.1.5.RELEASE</version>
         </dependency>
 ```
+跳转: [**RedisConfig.java**](https://github.com/TianShengBingFeiNiuRen/SpringBoot_StringRedisTemplate_JestClient_JPA/blob/master/stock-market-macd-calculate/src/main/java/com/blockchaindata/stockmarketmacdcalculate/config/RedisConfig.java)
 
 **二、Spring Boot 整合 ElasticSearch5.6.9 (JestClient)**
 
@@ -32,6 +33,7 @@ Spring Boot 整合 StringRedisTemplate + JestClient + JPA
             <version>5.3.4</version>
         </dependency>
 ```
+跳转: [**EsService.java**](https://github.com/TianShengBingFeiNiuRen/SpringBoot_StringRedisTemplate_JestClient_JPA/blob/master/stock-market-macd-calculate/src/main/java/com/blockchaindata/stockmarketmacdcalculate/service/EsService.java)
 
 **三、Spring Boot 整合 MySql（SpringDataJPA）**
 
@@ -48,4 +50,6 @@ Spring Boot 整合 StringRedisTemplate + JestClient + JPA
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 ```
+跳转: [**StockInformationRepository.java**](https://github.com/TianShengBingFeiNiuRen/SpringBoot_StringRedisTemplate_JestClient_JPA/blob/master/stock-market-macd-calculate/src/main/java/com/blockchaindata/stockmarketmacdcalculate/dao/StockInformationRepository.java)
 
+**CSDN**: [**link**](https://blog.csdn.net/weixin_39792935/article/details/87862919).
