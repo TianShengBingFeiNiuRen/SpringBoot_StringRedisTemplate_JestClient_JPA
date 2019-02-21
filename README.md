@@ -1,5 +1,5 @@
-# SpringBoot_StringRedisTemplate_JestClient_JPA
-Spring Boot 整合 StringRedisTemplate + JestClient + JPA
+# SpringBoot_StringRedisTemplate_JestClient_JPA 欢迎star
+Spring Boot 整合 StringRedisTemplate + JestClient + JPA 
 
 **一、Spring Boot 整合 Redis (StringRedisTemplate)**
 
