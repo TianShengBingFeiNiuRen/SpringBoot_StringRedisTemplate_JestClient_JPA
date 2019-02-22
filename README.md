@@ -35,7 +35,7 @@ Spring Boot 整合 StringRedisTemplate + JestClient + JPA
 ```
 跳转: [**EsService.java**](https://github.com/TianShengBingFeiNiuRen/SpringBoot_StringRedisTemplate_JestClient_JPA/blob/master/stock-market-macd-calculate/src/main/java/com/blockchaindata/stockmarketmacdcalculate/service/EsService.java)
 
-**三、Spring Boot 整合 MySql（SpringDataJPA）**
+**三、Spring Boot 整合 MySQL（SpringDataJPA）**
 
 1.maven依赖
 
