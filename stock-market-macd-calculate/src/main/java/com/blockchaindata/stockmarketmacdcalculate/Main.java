@@ -28,7 +28,7 @@ public class Main implements ApplicationRunner {
         System.out.println(timeId);
 
         System.out.println(TimeUtil.FORMAT_HOUR.get().format(new Date()));
-        System.out.println(TimeUtil.FORMAT_MIN.get().format(new Date()));
+        System.out.println(TimeUtil.FORMAT_MINUTE.get().format(new Date()));
 
         MacdData macdData = new MacdData();
         macdData.setStockCode("000002.XSHE");
