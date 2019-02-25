@@ -15,6 +15,7 @@ public class TimeUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(TimeUtil.class);
     public static final ThreadLocal<SimpleDateFormat> FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+    public static final ThreadLocal<SimpleDateFormat> FORMAT_DAY = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
     public static final ThreadLocal<SimpleDateFormat> FORMAT_HOUR = ThreadLocal.withInitial(() -> new SimpleDateFormat("HH"));
     public static final ThreadLocal<SimpleDateFormat> FORMAT_MINUTE = ThreadLocal.withInitial(() -> new SimpleDateFormat("mm"));
     public static final ThreadLocal<SimpleDateFormat> FORMAT_SECOND = ThreadLocal.withInitial(() -> new SimpleDateFormat("ss"));
