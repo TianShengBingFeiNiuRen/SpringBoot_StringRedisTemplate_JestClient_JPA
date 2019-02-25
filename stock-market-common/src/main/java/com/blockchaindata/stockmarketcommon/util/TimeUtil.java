@@ -30,4 +30,12 @@ public class TimeUtil {
         }
         return timeId;
     }
+    
+    public static void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+        }
+    }
 }
