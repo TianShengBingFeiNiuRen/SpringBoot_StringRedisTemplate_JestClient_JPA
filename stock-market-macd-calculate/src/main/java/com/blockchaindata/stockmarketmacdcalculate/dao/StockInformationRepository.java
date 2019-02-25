@@ -18,4 +18,10 @@ public interface StockInformationRepository extends JpaRepository<StockInformati
 
     @Query(value = "SELECT stockCode FROM StockInformation WHERE endDate > ?1")
     List<String> findAllStockCodeAfter(String endTime);
+    
+    @Query(nativeQuery = true, value = "SELECT stock_code FROM stock_finance")
+    List<String> findAllStockCodeOfDividend();
+
+    @Query(nativeQuery = true, value = "SELECT COUNT(id) FROM stock_trade_day WHERE trade_day = ?1")
+    int nowIsItCurrentlyTradingDay(String nowTime);
 }
