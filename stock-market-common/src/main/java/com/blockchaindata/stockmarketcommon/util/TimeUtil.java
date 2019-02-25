@@ -31,11 +31,21 @@ public class TimeUtil {
         return timeId;
     }
     
+    public static Date parseTime(String time) {
+        Date parse = null;
+        try {
+            parse = TimeUtil.FORMAT.get().parse(time);
+        } catch (ParseException e) {
+            LOG.error("FORMAT parse time failure!! error={}", e.getMessage());
+        }
+        return parse;
+    }
+    
     public static void sleep(long time) {
         try {
             Thread.sleep(time);
         } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
+            LOG.error("Thread sleep failure!! error={}", e.getMessage());
         }
     }
 }
