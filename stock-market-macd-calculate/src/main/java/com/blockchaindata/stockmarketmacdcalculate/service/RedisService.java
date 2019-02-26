@@ -30,7 +30,7 @@ public class RedisService {
      * @param domain 对象
      * @param expire 过期时间(单位:秒),传入 -1 时表示不设置过期时间
      */
-    public void put(String field, String key, String domain, long expire) {
+    public void putHash(String field, String key, String domain, long expire) {
         hashOperations.put(field, key, domain);
         if (expire != -1) {
             stringRedisTemplate.expire(field, expire, TimeUnit.SECONDS);
@@ -40,39 +40,39 @@ public class RedisService {
     /**
      * 删除
      */
-    public void remove(String field, String key) {
+    public void removeHash(String field, String key) {
         hashOperations.delete(field, key);
     }
 
-    public void removeField(String field){
+    public void removeHashField(String field){
         hashOperations.delete(field);
     }
 
     /**
      * 查询
      */
-    public String get(String field, String key) {
+    public String getHash(String field, String key) {
         return hashOperations.get(field, key);
     }
 
     /**
      * 获取当前redis库下所有对象
      */
-    public List<String> getAll(String field) {
+    public List<String> getAllHash(String field) {
         return hashOperations.values(field);
     }
 
     /**
      * 查询查询当前redis库下所有key
      */
-    public Set<String> getKeys(String field) {
+    public Set<String> getHashKeys(String field) {
         return hashOperations.keys(field);
     }
 
     /**
      * 判断key是否存在redis中
      */
-    public boolean isKeyExists(String field, String key) {
+    public boolean isHashKeyExists(String field, String key) {
         return hashOperations.hasKey(field, key);
     }
 
@@ -86,7 +86,7 @@ public class RedisService {
     /**
      * 清空redis
      */
-    public void empty(String field) {
+    public void emptyHashField(String field) {
         Set<String> set = hashOperations.keys(field);
         set.forEach(key -> hashOperations.delete(field, key));
     }
