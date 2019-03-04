@@ -24,4 +24,8 @@ public interface StockInformationRepository extends JpaRepository<StockInformati
 
     @Query(nativeQuery = true, value = "SELECT COUNT(id) FROM stock_trade_day WHERE trade_day = ?1")
     int nowIsItCurrentlyTradingDay(String nowTime);
+    
+    @Modifying //修改表数据
+    @Query(nativeQuery = true, value = "INSERT INTO stock_suspension(stock_code) VALUES (?1)")
+    int insertSuspensionStockCode(String stockCode);
 }
