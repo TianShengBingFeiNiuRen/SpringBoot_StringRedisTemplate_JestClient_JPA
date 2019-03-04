@@ -12,7 +12,7 @@ import java.io.Serializable;
 public class StockInformation implements Serializable {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //id自动增长
     @Column(name = "id")
     private int id; //id
 
