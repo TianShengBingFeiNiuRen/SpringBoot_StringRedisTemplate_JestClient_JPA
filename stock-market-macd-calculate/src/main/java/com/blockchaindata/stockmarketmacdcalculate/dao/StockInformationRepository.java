@@ -28,4 +28,7 @@ public interface StockInformationRepository extends JpaRepository<StockInformati
     @Modifying //修改表数据
     @Query(nativeQuery = true, value = "INSERT INTO stock_suspension(stock_code) VALUES (?1)")
     int insertSuspensionStockCode(String stockCode);
+    
+    @Query(nativeQuery = true, value = "SELECT stock_code AS code, stock_name AS name, stock_display_name AS displayName FROM stock_security WHERE stock_code IN (SELECT stock_code FROM stock_calculated)")
+    List<Map<String, String>> findAllStockCodeInfoOfCalculated();
 }
