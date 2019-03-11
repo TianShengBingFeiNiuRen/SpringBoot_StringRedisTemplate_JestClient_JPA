@@ -31,4 +31,7 @@ public interface StockInformationRepository extends JpaRepository<StockInformati
     
     @Query(nativeQuery = true, value = "SELECT stock_code AS code, stock_name AS name, stock_display_name AS displayName FROM stock_security WHERE stock_code IN (SELECT stock_code FROM stock_calculated)")
     List<Map<String, String>> findAllStockCodeInfoOfCalculated();
+    
+    @Query(nativeQuery = true, value = "SELECT DISTINCT(stock_code) FROM stock_calculated WHERE stock_code NOT IN (SELECT stock_code FROM stock_suspension)")
+    List<String> findAllStockCodeOfCalculatedAndNoSuspension();
 }
