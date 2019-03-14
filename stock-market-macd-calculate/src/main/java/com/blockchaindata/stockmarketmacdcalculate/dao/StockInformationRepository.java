@@ -29,6 +29,14 @@ public interface StockInformationRepository extends JpaRepository<StockInformati
     @Query(nativeQuery = true, value = "INSERT INTO stock_suspension(stock_code) VALUES (?1)")
     int insertSuspensionStockCode(String stockCode);
     
+    @Modifying
+    @Query(nativeQuery = true, value = "DELETE FROM sector_stock WHERE stock_code NOT IN (SELECT stock_code FROM stock_security)")
+    int deleteAllInvalidStockCodeOfSectorStock();
+    
+    @Modifying
+    @Query(nativeQuery = true, value = "TRUNCATE TABLE concept_sector")
+    int deleteAllConceptSector();
+    
     @Query(nativeQuery = true, value = "SELECT stock_code AS code, stock_name AS name, stock_display_name AS displayName FROM stock_security WHERE stock_code IN (SELECT stock_code FROM stock_calculated)")
     List<Map<String, String>> findAllStockCodeInfoOfCalculated();
     
