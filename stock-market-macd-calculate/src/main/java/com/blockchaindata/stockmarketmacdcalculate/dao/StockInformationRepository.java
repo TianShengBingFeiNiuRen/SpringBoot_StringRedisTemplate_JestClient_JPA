@@ -34,4 +34,8 @@ public interface StockInformationRepository extends JpaRepository<StockInformati
     
     @Query(nativeQuery = true, value = "SELECT DISTINCT(stock_code) FROM stock_calculated WHERE stock_code NOT IN (SELECT stock_code FROM stock_suspension)")
     List<String> findAllStockCodeOfCalculatedAndNoSuspension();
+    
+    @Query(nativeQuery = true, value = "SELECT * FROM (SELECT code AS sectorCode, name AS sectorName FROM custom_sector UNION SELECT code AS sectorCode, name AS sectorName FROM concept_sector UNION SELECT code AS sectorCode, name AS sectorName FROM industry_sector) AS tableA \n" +
+            "WHERE tableA.sectorName LIKE ?3 LIMIT ?1,?2")
+    List<Map<String, String>> findAllSectorInfo(int row, int size, String sectorName);
 }
