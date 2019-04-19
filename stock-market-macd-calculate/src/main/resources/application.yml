@@ -28,13 +28,6 @@ spring:
     host: ##.###.###.#
     port: 6379
     password: ######
-    lettuce:
-      pool:
-        max-active: 500
-        max-wait: -1
-        max-idle: 10
-        min-idle: 0
-    timeout: 10000
   elasticsearch:
     jest:
       uris: http://##.###.###.###:###,http://##.###.###.###:###,http://##.###.###.###:###,http://##.###.###.###:###,http://##.###.###.###:###
