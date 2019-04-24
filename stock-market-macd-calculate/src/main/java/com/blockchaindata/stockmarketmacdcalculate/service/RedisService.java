@@ -27,11 +27,11 @@ public class RedisService {
      *
      * @param field  field
      * @param key    key
-     * @param domain 对象
+     * @param value  value
      * @param expire 过期时间(单位:秒),传入 -1 时表示不设置过期时间
      */
-    public void putHash(String field, String key, String domain, long expire) {
-        hashOperations.put(field, key, domain);
+    public void putHash(String field, String key, String value, long expire) {
+        hashOperations.put(field, key, value);
         if (expire != -1) {
             stringRedisTemplate.expire(field, expire, TimeUnit.SECONDS);
         }
