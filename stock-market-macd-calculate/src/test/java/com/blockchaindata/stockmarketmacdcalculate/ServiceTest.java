@@ -84,14 +84,6 @@ public class ServiceTest {
         stringStringStringHashOperations.put(macdSignalForRedisKey, key, GsonUtil.GSON.toJson(macdSignalForRedis));
         String str = stringStringStringHashOperations.get(macdSignalForRedisKey, key);
         System.out.println(str);
-
-        System.out.println("=======================================");
-
-        redisService.put(macdSignalForRedisKey, key, GsonUtil.GSON.toJson(macdSignalForRedis), -1);
-        String str1 = redisService.get(macdSignalForRedisKey, key);
-        System.out.println(str1);
-        List<String> all = redisService.getAll(macdSignalForRedisKey);
-        all.forEach(System.out::println);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.blockchaindata.stockmarketmacdcalculate.service;
 
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author Andon
- * @date 2019/2/20
+ * @date 2019/5/15
  */
 @Service
 public class RedisService {
@@ -22,73 +23,75 @@ public class RedisService {
     @Resource
     private HashOperations<String, String, String> hashOperations;
 
+    @Resource
+    private SetOperations<String, Object> setOperations;
+
     /**
-     * 添加
+     * 设置超时时间
      *
-     * @param field  field
      * @param key    key
-     * @param value  value
-     * @param expire 过期时间(单位:秒),传入 -1 时表示不设置过期时间
+     * @param expire 过期时间(单位:秒)
      */
-    public void putHash(String field, String key, String value, long expire) {
-        hashOperations.put(field, key, value);
-        if (expire != -1) {
-            stringRedisTemplate.expire(field, expire, TimeUnit.SECONDS);
-        }
+    public void expireKey(String key, long expire) {
+        stringRedisTemplate.expire(key, expire, TimeUnit.SECONDS);
     }
 
     /**
-     * 删除
+     * hash操作
      */
-    public void removeHash(String field, String key) {
-        hashOperations.delete(field, key);
+    public void addHashValue(String key, String field, String value) {
+        hashOperations.put(key, field, value);
     }
 
-    public void removeHashField(String field){
-        hashOperations.delete(field);
+    public void deleteHashValue(String key, String field) {
+        hashOperations.delete(key, field);
+    }
+
+    public void deleteHashKey(String key) {
+        hashOperations.delete(key);
+    }
+
+    public String getHashValue(String key, String field) {
+        return hashOperations.get(key, field);
+    }
+
+    public List<String> getHashValues(String key) {
+        return hashOperations.values(key);
+    }
+
+    public Set<String> getHashFields(String key) {
+        return hashOperations.keys(key);
+    }
+
+    public boolean isHashFieldExists(String key, String field) {
+        return hashOperations.hasKey(key, field);
+    }
+
+    public void emptyHashKey(String key) {
+        Set<String> set = hashOperations.keys(key);
+        set.forEach(field -> hashOperations.delete(key, field));
     }
 
     /**
-     * 查询
+     * set操作
      */
-    public String getHash(String field, String key) {
-        return hashOperations.get(field, key);
+    public void addSetValue(String key, Object value) {
+        setOperations.add(key, value);
     }
 
-    /**
-     * 获取当前redis库下所有对象
-     */
-    public List<String> getAllHash(String field) {
-        return hashOperations.values(field);
+    public void addSetValues(String key, Object[] set) {
+        setOperations.add(key, set);
     }
 
-    /**
-     * 查询查询当前redis库下所有key
-     */
-    public Set<String> getHashKeys(String field) {
-        return hashOperations.keys(field);
+    public void removeSetValue(String key, Object value) {
+        setOperations.remove(key, value);
     }
 
-    /**
-     * 判断key是否存在redis中
-     */
-    public boolean isHashKeyExists(String field, String key) {
-        return hashOperations.hasKey(field, key);
+    public void removeSetValue(String key, Object[] value) {
+        setOperations.remove(key, value);
     }
 
-    /**
-     * 查询当前key下缓存数量
-     */
-    public long count(String field) {
-        return hashOperations.size(field);
+    public Set<Object> getSetValues(String key) {
+        return setOperations.members(key);
     }
-
-    /**
-     * 清空redis
-     */
-    public void emptyHashField(String field) {
-        Set<String> set = hashOperations.keys(field);
-        set.forEach(key -> hashOperations.delete(field, key));
-    }
-
 }
