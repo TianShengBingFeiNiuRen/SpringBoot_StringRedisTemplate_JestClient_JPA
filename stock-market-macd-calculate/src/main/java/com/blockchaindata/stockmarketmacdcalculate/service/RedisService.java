@@ -83,11 +83,11 @@ public class RedisService {
         setOperations.add(key, set);
     }
 
-    public void removeSetValue(String key, Object value) {
+    public void deleteSetValue(String key, Object value) {
         setOperations.remove(key, value);
     }
 
-    public void removeSetValue(String key, Object[] value) {
+    public void deleteSetValue(String key, Object[] value) {
         setOperations.remove(key, value);
     }
 
