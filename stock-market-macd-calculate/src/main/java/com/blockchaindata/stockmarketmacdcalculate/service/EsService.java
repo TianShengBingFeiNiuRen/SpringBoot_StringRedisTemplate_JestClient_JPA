@@ -49,6 +49,7 @@ public class EsService {
         }
         try {
             jestClient.execute(bulk.build());
+            LOG.info("bulkIndex >> indexName={} list.size={}", indexName, list.size());
         } catch (IOException e) {
             LOG.warn("bulkIndex again!! error={} index={}", e.getMessage(), indexName);
             sleep(100);

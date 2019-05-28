@@ -63,7 +63,7 @@ public class EsServiceTest {
     @Test
     public void bulkIndexTest() {
         ArrayList<EsTestModel> esTestModels = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 3000; i++) {
             long l = System.currentTimeMillis();
             EsTestModel esTestModel = new EsTestModel();
             esTestModel.setStr(String.valueOf(i));
