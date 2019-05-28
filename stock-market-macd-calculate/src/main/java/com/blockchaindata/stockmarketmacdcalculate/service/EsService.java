@@ -33,11 +33,7 @@ public class EsService {
             return jestClient.execute(search);
         } catch (Exception e) {
             LOG.warn("index:{}, type:{}, search again!! error = {}", indexName, typeName, e.getMessage());
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e1) {
-                LOG.error(e.getMessage(), e);
-            }
+            sleep(100);
             return jsonSearch(json, indexName, typeName);
         }
     }
