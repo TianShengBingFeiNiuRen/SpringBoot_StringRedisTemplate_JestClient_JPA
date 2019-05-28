@@ -49,7 +49,7 @@ public class MacdDataToEsService implements Runnable {
             if (timestampL == 0) {
                 timestamp.set(l);
             }
-            TimeUtil.sleep(100);
+            TimeUtil.sleep(10);
         }
     }
 
