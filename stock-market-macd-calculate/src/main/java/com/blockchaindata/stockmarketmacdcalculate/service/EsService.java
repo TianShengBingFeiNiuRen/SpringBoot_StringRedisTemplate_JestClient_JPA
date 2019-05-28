@@ -1,17 +1,17 @@
 package com.blockchaindata.stockmarketmacdcalculate.service;
 
+import com.blockchaindata.stockmarketcommon.domain.BaseModel;
 import com.blockchaindata.stockmarketcommon.domain.MacdData;
-import com.blockchaindata.stockmarketcommon.domain.MacdExpectedPrice;
-import com.blockchaindata.stockmarketcommon.domain.MacdSignal;
 import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
 import io.searchbox.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Andon
@@ -25,6 +25,9 @@ public class EsService {
     @Resource
     private JestClient jestClient;
 
+    /**
+     * 发送json查询
+     */
     SearchResult jsonSearch(String json, String indexName, String typeName) {
         Search search = new Search.Builder(json).addIndex(indexName).addType(typeName).build();
         try {
@@ -40,62 +43,77 @@ public class EsService {
         }
     }
 
-    MacdData getMacdDataById(String index, String type, String id) {
-        Get get = new Get.Builder(index, id).type(type).build();
+    /**
+     * 批量写入
+     */
+    public <T extends BaseModel> void bulkIndex(List<T> list, String indexName) {
+        Bulk.Builder bulk = new Bulk.Builder();
+        for (T o : list) {
+            Index index = new Index.Builder(o).id(o.getPK()).index(indexName).type(o.getType()).build();
+            bulk.addAction(index);
+        }
         try {
-            DocumentResult documentResult = jestClient.execute(get);
-            return documentResult.getSourceAsObject(MacdData.class);
+            jestClient.execute(bulk.build());
         } catch (IOException e) {
-            LOG.warn("getMacdDataById again!! error={} id={}", e.getMessage(), id);
-            return getMacdDataById(index, type, id);
+            LOG.warn("bulkIndex again!! error={} index={}", e.getMessage(), indexName);
+            sleep(100);
+            bulkIndex(list, indexName);
         }
     }
 
-    MacdData getMacdDataByIdAgain(String index, String type, String id) {
-        Get get = new Get.Builder(index, id).type(type).build();
-        try {
-            DocumentResult documentResult = jestClient.execute(get);
-            MacdData data = documentResult.getSourceAsObject(MacdData.class);
-            if (!ObjectUtils.isEmpty(data)) {
-                LOG.info("getMacdDataByIdAgain success!! id={}", id);
-            }
-            return data;
-        } catch (IOException e) {
-            LOG.error("getMacdDataById failure!! error={} id={}", e.getMessage(), id);
-            return null;
-        }
-    }
-
-    public void insertOrUpdateMacdData(MacdData macdData, String id, String index, String type) {
-        Index.Builder builder = new Index.Builder(macdData).id(id).refresh(true);
+    /**
+     * 新增或者更新文档
+     */
+    public <T> void insertOrUpdateDocumentById(T o, String index, String type, String uniqueId) {
+        Index.Builder builder = new Index.Builder(o);
+        builder.id(uniqueId);
+        builder.refresh(true);
         Index indexDoc = builder.index(index).type(type).build();
         try {
             jestClient.execute(indexDoc);
         } catch (IOException e) {
-            LOG.warn("insertOrUpdateMacdData again!! error={} id={}", e.getMessage(), id);
-            insertOrUpdateMacdData(macdData, id, index, type);
+            LOG.warn("insertOrUpdateDocumentById again!! error={} id={}", e.getMessage(), uniqueId);
+            sleep(100);
+            insertOrUpdateDocumentById(o, index, type, uniqueId);
         }
     }
 
-    void insertOrUpdateMacdSignal(MacdSignal macdSignal, String id, String index, String type) {
-        Index.Builder builder = new Index.Builder(macdSignal).id(id).refresh(true);
-        Index indexDoc = builder.index(index).type(type).build();
+    /**
+     * 根据主键id删除文档
+     */
+    public void deleteDocumentById(String index, String type, String id) {
+        Delete delete = new Delete.Builder(id).index(index).type(type).build();
         try {
-            jestClient.execute(indexDoc);
+            jestClient.execute(delete);
         } catch (IOException e) {
-            LOG.warn("insertOrUpdateMacdSignal again!! error={} id={}", e.getMessage(), id);
-            insertOrUpdateMacdSignal(macdSignal, id, index, type);
+            LOG.warn("deleteDocumentById again!! error={} id={}", e.getMessage(), id);
+            sleep(100);
+            deleteDocumentById(index, type, id);
         }
     }
 
-    void insertOrUpdateMacdExpectedPrice(MacdExpectedPrice macdExpectedPrice, String id, String index, String type) {
-        Index.Builder builder = new Index.Builder(macdExpectedPrice).id(id).refresh(true);
-        Index indexDoc = builder.index(index).type(type).build();
+    /**
+     * 根据主键id获取文档
+     */
+    public <T> T getDocumentById(T object, String index, String id) {
+        Get get = new Get.Builder(index, id).build();
+        T o = null;
         try {
-            jestClient.execute(indexDoc);
+            JestResult result = jestClient.execute(get);
+            o = (T) result.getSourceAsObject(object.getClass());
         } catch (IOException e) {
-            LOG.warn("insertOrUpdateMacdPrice again!! error={} id={}", e.getMessage(), id);
-            insertOrUpdateMacdExpectedPrice(macdExpectedPrice, id, index, type);
+            LOG.warn("getDocumentById again!! error={} id=");
+            sleep(100);
+            getDocumentById(object, index, id);
+        }
+        return o;
+    }
+
+    private void sleep(long time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            LOG.error("Thread sleep failure!! error={}", e.getMessage());
         }
     }
 
