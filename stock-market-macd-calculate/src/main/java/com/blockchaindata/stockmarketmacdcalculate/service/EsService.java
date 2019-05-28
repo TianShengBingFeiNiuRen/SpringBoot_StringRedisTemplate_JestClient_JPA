@@ -1,7 +1,6 @@
 package com.blockchaindata.stockmarketmacdcalculate.service;
 
 import com.blockchaindata.stockmarketcommon.domain.BaseModel;
-import com.blockchaindata.stockmarketcommon.domain.MacdData;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.*;
