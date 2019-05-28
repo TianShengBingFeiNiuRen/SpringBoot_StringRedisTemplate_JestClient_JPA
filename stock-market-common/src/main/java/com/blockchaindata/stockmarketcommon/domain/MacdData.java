@@ -6,7 +6,7 @@ import java.io.Serializable;
  * @author Andon
  * @date 2019/2/19
  */
-public class MacdData implements Serializable {
+public class MacdData extends BaseModel implements Serializable {
 
     private String stockCode; //股票代码:000001.XSHE
     private String time; //时间:2019-02-18 14:57:00
@@ -108,10 +108,6 @@ public class MacdData implements Serializable {
         this.remark = remark;
     }
 
-    public String getId() {
-        return stockCode + "_" + timeType + "_" + timeId;
-    }
-
     @Override
     public String toString() {
         return "MacdData{" +
@@ -126,7 +122,16 @@ public class MacdData implements Serializable {
                 ", bar=" + bar +
                 ", closePrice=" + closePrice +
                 ", remark='" + remark + '\'' +
-                ", id='" + getId() + '\'' +
                 '}';
+    }
+
+    @Override
+    public String getPK() {
+        return stockCode + "_" + timeType + "_" + timeId;
+    }
+
+    @Override
+    public String getType() {
+        return time.split(" ")[0];
     }
 }
