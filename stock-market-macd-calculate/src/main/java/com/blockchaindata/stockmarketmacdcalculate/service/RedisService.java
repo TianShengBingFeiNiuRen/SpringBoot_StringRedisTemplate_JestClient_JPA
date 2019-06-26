@@ -62,6 +62,10 @@ public class RedisService {
     public Set<String> getHashFields(String key) {
         return hashOperations.keys(key);
     }
+    
+    public Map<String, String> getHashFieldsValues(String key){
+        return hashOperations.entries(key);
+    }
 
     public boolean isHashFieldExists(String key, String field) {
         return hashOperations.hasKey(key, field);
