@@ -33,6 +33,7 @@ public class EsService {
                 .Builder(uris)
                 .connTimeout(10000)
                 .readTimeout(10000)
+                .maxConnectionIdleTime(1500L, TimeUnit.MILLISECONDS)
                 .multiThreaded(true)
                 .build());
         jestClient = jestClientFactory.getObject();
