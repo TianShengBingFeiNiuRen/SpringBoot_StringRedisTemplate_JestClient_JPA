@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * @author Andon
- * @date 2019/5/27
+ * 2019/5/27
  */
 public abstract class BaseModel implements Serializable {
 

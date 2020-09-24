@@ -2,27 +2,32 @@ package com.blockchaindata.stockmarketmacdcalculate.service;
 
 import com.blockchaindata.stockmarketcommon.domain.BaseModel;
 import io.searchbox.client.JestClient;
+import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
+import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.core.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
-import javax.annotation.Resource;
+import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Andon
- * @date 2019/2/21
+ * 2020/9/24
  */
+@Slf4j
 @Service
 public class EsService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EsService.class);
-
     private JestClient jestClient;
-    @Value("${uris}")
+    @Value("${elasticsearch.uris.http}")
     private String url;
 
     @PostConstruct
@@ -39,6 +44,23 @@ public class EsService {
         jestClient = jestClientFactory.getObject();
     }
 
+    public SearchResult searchSource(SearchSourceBuilder searchSourceBuilder, String index, String type) {
+        try {
+            String searchSourceBuilderStr = searchSourceBuilder.toString();
+            if (ObjectUtils.isEmpty(type)) {
+                Search search = new Search.Builder(searchSourceBuilderStr).addIndex(index).build();
+                return jestClient.execute(search);
+            } else {
+                Search search = new Search.Builder(searchSourceBuilderStr).addIndex(index).addType(type).build();
+                return jestClient.execute(search);
+            }
+        } catch (IOException e) {
+            log.error("searchSource failure!! error={}", e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     /**
      * 发送json查询
      */
@@ -47,16 +69,16 @@ public class EsService {
         try {
             return jestClient.execute(search);
         } catch (Exception e) {
-            LOG.warn("index:{}, type:{}, search again!! error = {}", indexName, typeName, e.getMessage());
-            sleep(100);
-            return jsonSearch(json, indexName, typeName);
+            log.error("index:{}, type:{}, search again!! error={}", indexName, typeName, e.getMessage());
+            e.printStackTrace();
+            return null;
         }
     }
 
     /**
      * 批量写入
      */
-    public <T extends BaseModel> void bulkIndex(List<T> list, String indexName) {
+    <T extends BaseModel> void bulkIndex(List<T> list, String indexName) {
         Bulk.Builder bulk = new Bulk.Builder();
         for (T o : list) {
             Index index = new Index.Builder(o).id(o.getPK()).index(indexName).type(o.getType()).build();
@@ -64,11 +86,10 @@ public class EsService {
         }
         try {
             jestClient.execute(bulk.build());
-            LOG.info("bulkIndex >> indexName={} list.size={}", indexName, list.size());
+            log.info("bulkIndex >> indexName={} list.size={}", indexName, list.size());
         } catch (IOException e) {
-            LOG.warn("bulkIndex again!! error={} index={}", e.getMessage(), indexName);
-            sleep(100);
-            bulkIndex(list, indexName);
+            log.error("bulkIndex failure!! error={} index={}", e.getMessage(), indexName);
+            e.printStackTrace();
         }
     }
 
@@ -83,9 +104,8 @@ public class EsService {
         try {
             jestClient.execute(indexDoc);
         } catch (IOException e) {
-            LOG.warn("insertOrUpdateDocumentById again!! error={} id={}", e.getMessage(), uniqueId);
-            sleep(100);
-            insertOrUpdateDocumentById(o, index, type, uniqueId);
+            log.error("insertOrUpdateDocumentById failure!! error={} id={}", e.getMessage(), uniqueId);
+            e.printStackTrace();
         }
     }
 
@@ -97,9 +117,8 @@ public class EsService {
         try {
             jestClient.execute(delete);
         } catch (IOException e) {
-            LOG.warn("deleteDocumentById again!! error={} id={}", e.getMessage(), id);
-            sleep(100);
-            deleteDocumentById(index, type, id);
+            log.error("deleteDocumentById failure!! error={} id={}", e.getMessage(), id);
+            e.printStackTrace();
         }
     }
 
@@ -113,19 +132,21 @@ public class EsService {
             JestResult result = jestClient.execute(get);
             o = (T) result.getSourceAsObject(object.getClass());
         } catch (IOException e) {
-            LOG.warn("getDocumentById again!! error={} id=");
-            sleep(100);
+            log.warn("getDocumentById again!! error={} id={}", e.getMessage(), id);
+            e.printStackTrace();
             getDocumentById(object, index, id);
         }
         return o;
     }
 
-    private void sleep(long time) {
+    public SearchResult jsonSearchNoType(String json, String indexName) {
+        Search search = new Search.Builder(json).addIndex(indexName).build();
         try {
-            Thread.sleep(time);
-        } catch (InterruptedException e) {
-            LOG.error("Thread sleep failure!! error={}", e.getMessage());
+            return jestClient.execute(search);
+        } catch (Exception e) {
+            log.warn("index:{}, jsonSearchNoType failure!! error={}", indexName, e.getMessage());
+            e.printStackTrace();
+            return null;
         }
     }
-
 }
