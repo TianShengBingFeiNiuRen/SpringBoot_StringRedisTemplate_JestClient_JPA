@@ -2,6 +2,7 @@ package com.blockchaindata.stockmarketmacdcalculate.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.blockchaindata.stockmarketcommon.domain.BaseModel;
+import com.blockchaindata.stockmarketcommon.util.TimeUtil;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
@@ -212,16 +213,14 @@ public class EsService {
      */
     public <T> void insertOrUpdateDocumentById(String indexName, String typeName, String id, T o) {
         try {
-            Index.Builder builder = new Index.Builder(o);
-            builder.id(id);
-            builder.refresh(true);
-            Index indexDoc;
+            Index.Builder builder = new Index.Builder(o).id(id).refresh(true);
+            Index index;
             if (ObjectUtils.isEmpty(typeName)) {
-                indexDoc = builder.index(indexName).build();
+                index = builder.index(indexName).build();
             } else {
-                indexDoc = builder.index(indexName).type(typeName).build();
+                index = builder.index(indexName).type(typeName).build();
             }
-            jestClient.execute(indexDoc);
+            jestClient.execute(index);
         } catch (IOException e) {
             log.error("insertOrUpdateDocumentById failure!! id={} error={}", id, e.getMessage());
             e.printStackTrace();
@@ -233,7 +232,11 @@ public class EsService {
      */
     public void deleteDocumentById(String indexName, String typeName, String id) {
         try {
-            jestClient.execute(new Delete.Builder(id).index(indexName).type(typeName).build());
+            if (ObjectUtils.isEmpty(typeName)){
+                jestClient.execute(new Delete.Builder(id).index(indexName).build());
+            }else {
+                jestClient.execute(new Delete.Builder(id).index(indexName).type(typeName).build());
+            }
         } catch (IOException e) {
             log.error("deleteDocumentById failure!! id={} error={}", id, e.getMessage());
             e.printStackTrace();
