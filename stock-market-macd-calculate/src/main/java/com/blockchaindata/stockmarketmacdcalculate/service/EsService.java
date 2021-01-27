@@ -2,7 +2,6 @@ package com.blockchaindata.stockmarketmacdcalculate.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.blockchaindata.stockmarketcommon.domain.BaseModel;
-import com.blockchaindata.stockmarketcommon.util.TimeUtil;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
@@ -86,7 +85,12 @@ public class EsService {
      */
     public void createIndexMappings(String indexName, String typeName, String mapping) {
         try {
-            JestResult result = jestClient.execute(new PutMapping.Builder(indexName, typeName, mapping).build());
+            JestResult result;
+            if (ObjectUtils.isEmpty(typeName)) {
+                result = jestClient.execute(new PutMapping.Builder(indexName, indexName, mapping).build());
+            } else {
+                result = jestClient.execute(new PutMapping.Builder(indexName, typeName, mapping).build());
+            }
             log.info("createIndexMappings state:{}", result.isSucceeded());
         } catch (Exception e) {
             log.error("createIndexMappings failure!! error{}", e.getMessage());
@@ -194,7 +198,7 @@ public class EsService {
             for (T o : collection) {
                 Index index;
                 if (ObjectUtils.isEmpty(o.getType())) {
-                    index = new Index.Builder(o).id(o.getPK()).index(indexName).build();
+                    index = new Index.Builder(o).id(o.getPK()).index(indexName).type(indexName).build();
                 } else {
                     index = new Index.Builder(o).id(o.getPK()).index(indexName).type(o.getType()).build();
                 }
@@ -216,7 +220,7 @@ public class EsService {
             Index.Builder builder = new Index.Builder(o).id(id).refresh(true);
             Index index;
             if (ObjectUtils.isEmpty(typeName)) {
-                index = builder.index(indexName).build();
+                index = builder.index(indexName).type(indexName).build();
             } else {
                 index = builder.index(indexName).type(typeName).build();
             }
@@ -232,9 +236,9 @@ public class EsService {
      */
     public void deleteDocumentById(String indexName, String typeName, String id) {
         try {
-            if (ObjectUtils.isEmpty(typeName)){
+            if (ObjectUtils.isEmpty(typeName)) {
                 jestClient.execute(new Delete.Builder(id).index(indexName).build());
-            }else {
+            } else {
                 jestClient.execute(new Delete.Builder(id).index(indexName).type(typeName).build());
             }
         } catch (IOException e) {
