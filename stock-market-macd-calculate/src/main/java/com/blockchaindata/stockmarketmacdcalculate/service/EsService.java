@@ -159,7 +159,7 @@ public class EsService {
         try {
             String searchSourceBuilderStr = searchSourceBuilder.toString();
             if (ObjectUtils.isEmpty(typeName)) {
-                Search search = new Search.Builder(searchSourceBuilderStr).addIndex(indexName).addType(indexName).build();
+                Search search = new Search.Builder(searchSourceBuilderStr).addIndex(indexName).build();
                 return jestClient.execute(search);
             } else {
                 Search search = new Search.Builder(searchSourceBuilderStr).addIndex(indexName).addType(typeName).build();
@@ -178,7 +178,7 @@ public class EsService {
     SearchResult jsonSearch(String indexName, String typeName, String json) {
         try {
             if (ObjectUtils.isEmpty(typeName)) {
-                return jestClient.execute(new Search.Builder(json).addIndex(indexName).addType(indexName).build());
+                return jestClient.execute(new Search.Builder(json).addIndex(indexName).build());
             } else {
                 return jestClient.execute(new Search.Builder(json).addIndex(indexName).addType(typeName).build());
             }
