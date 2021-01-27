@@ -1,11 +1,18 @@
 package com.blockchaindata.stockmarketmacdcalculate.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.blockchaindata.stockmarketcommon.domain.BaseModel;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.core.*;
+import io.searchbox.indices.CreateIndex;
+import io.searchbox.indices.DeleteIndex;
+import io.searchbox.indices.mapping.GetMapping;
+import io.searchbox.indices.mapping.PutMapping;
+import io.searchbox.indices.settings.GetSettings;
+import io.searchbox.indices.settings.UpdateSettings;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author Andon
- * 2020/9/24
+ * 2021/01/27
  */
 @Slf4j
 @Service
@@ -44,14 +51,107 @@ public class EsService {
         jestClient = jestClientFactory.getObject();
     }
 
-    public SearchResult searchSource(SearchSourceBuilder searchSourceBuilder, String index, String type) {
+    /**
+     * 创建索引index
+     */
+    public void createIndex(String indexName) {
+        try {
+            JestResult jestResult = jestClient.execute(new CreateIndex.Builder(indexName).build());
+            log.info("createIndex state:{}", jestResult.isSucceeded());
+        } catch (IOException e) {
+            log.error("createIndex failure!! error={}", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 删除索引index
+     */
+    public void deleteIndex(String indexName) {
+        try {
+            JestResult result = jestClient.execute(new DeleteIndex.Builder(indexName).build());
+            log.info("deleteIndex state:{}", result.isSucceeded());
+        } catch (Exception e) {
+            log.error("deleteIndex failure!! error={}", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 创建索引index的映射mapping
+     *
+     * @param mapping json格式的映射mappings
+     */
+    public void createIndexMappings(String indexName, String typeName, String mapping) {
+        try {
+            JestResult result = jestClient.execute(new PutMapping.Builder(indexName, typeName, mapping).build());
+            log.info("createIndexMappings state:{}", result.isSucceeded());
+        } catch (Exception e) {
+            log.error("createIndexMappings failure!! error{}", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 获取索引index的映射mappings
+     */
+    public String getIndexMappings(String indexName, String typeName) {
+        try {
+            JestResult result = jestClient.execute(new GetMapping.Builder().addIndex(indexName).addType(typeName).build());
+            log.info("getIndexMappings state:{}", result.isSucceeded());
+            String jsonString = result.getJsonString();
+            JSONObject jsonObject = JSONObject.parseObject(jsonString);
+            return jsonObject.getJSONObject(indexName).getJSONObject("mappings").toJSONString();
+        } catch (IOException e) {
+            log.error("getIndexMappings failure!! error={}", e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 获取索引index的设置settings
+     */
+    public String getIndexSettings(String indexName) {
+        try {
+            JestResult result = jestClient.execute(new GetSettings.Builder().addIndex(indexName).build());
+            log.info("getIndexSettings state:{}", result.isSucceeded());
+            String jsonString = result.getJsonString();
+            JSONObject jsonObject = JSONObject.parseObject(jsonString);
+            return jsonObject.getJSONObject(indexName).getJSONObject("settings").toJSONString();
+        } catch (IOException e) {
+            log.error("getIndexSettings failure!! error={}", e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 修改索引index的设置settings
+     *
+     * @param settings json格式的设置settings(传值示例：{"max_result_window":"20000000"})
+     */
+    public void updateIndexSettings(String indexName, String settings) {
+        try {
+            JestResult jestResult = jestClient.execute(new UpdateSettings.Builder(settings).addIndex(indexName).build());
+            log.info("updateIndexSettings state:{}", jestResult.isSucceeded());
+        } catch (Exception e) {
+            log.error("updateIndexSettings failure!! error={}", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * SearchSourceBuilder进行查询
+     */
+    public SearchResult searchSource(String indexName, String typeName, SearchSourceBuilder searchSourceBuilder) {
         try {
             String searchSourceBuilderStr = searchSourceBuilder.toString();
-            if (ObjectUtils.isEmpty(type)) {
-                Search search = new Search.Builder(searchSourceBuilderStr).addIndex(index).build();
+            if (ObjectUtils.isEmpty(typeName)) {
+                Search search = new Search.Builder(searchSourceBuilderStr).addIndex(indexName).build();
                 return jestClient.execute(search);
             } else {
-                Search search = new Search.Builder(searchSourceBuilderStr).addIndex(index).addType(type).build();
+                Search search = new Search.Builder(searchSourceBuilderStr).addIndex(indexName).addType(typeName).build();
                 return jestClient.execute(search);
             }
         } catch (IOException e) {
@@ -64,12 +164,12 @@ public class EsService {
     /**
      * 发送json查询
      */
-    SearchResult jsonSearch(String json, String indexName, String typeName) {
-        Search search = new Search.Builder(json).addIndex(indexName).addType(typeName).build();
+    SearchResult jsonSearch(String indexName, String typeName, String json) {
         try {
+            Search search = new Search.Builder(json).addIndex(indexName).addType(typeName).build();
             return jestClient.execute(search);
         } catch (Exception e) {
-            log.error("index:{}, type:{}, search again!! error={}", indexName, typeName, e.getMessage());
+            log.error("jsonSearch failure!! error={}", e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -78,17 +178,22 @@ public class EsService {
     /**
      * 批量写入
      */
-    <T extends BaseModel> void bulkIndex(List<T> list, String indexName) {
+    <T extends BaseModel> void bulkIndex(String indexName, List<T> list) {
         Bulk.Builder bulk = new Bulk.Builder();
         for (T o : list) {
-            Index index = new Index.Builder(o).id(o.getPK()).index(indexName).type(o.getType()).build();
+            Index index;
+            if (ObjectUtils.isEmpty(o.getType())) {
+                index = new Index.Builder(o).id(o.getPK()).index(indexName).build();
+            } else {
+                index = new Index.Builder(o).id(o.getPK()).index(indexName).type(o.getType()).build();
+            }
             bulk.addAction(index);
         }
         try {
             jestClient.execute(bulk.build());
-            log.info("bulkIndex >> indexName={} list.size={}", indexName, list.size());
+            log.info("bulkIndex >> indexName:{} list.size={}", indexName, list.size());
         } catch (IOException e) {
-            log.error("bulkIndex failure!! error={} index={}", e.getMessage(), indexName);
+            log.error("bulkIndex failure!! index:{} error:{} ", indexName, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -96,15 +201,20 @@ public class EsService {
     /**
      * 新增或者更新文档
      */
-    public <T> void insertOrUpdateDocumentById(T o, String index, String type, String uniqueId) {
-        Index.Builder builder = new Index.Builder(o);
-        builder.id(uniqueId);
-        builder.refresh(true);
-        Index indexDoc = builder.index(index).type(type).build();
+    public <T> void insertOrUpdateDocumentById(T o, String indexName, String typeName, String id) {
         try {
+            Index.Builder builder = new Index.Builder(o);
+            builder.id(id);
+            builder.refresh(true);
+            Index indexDoc;
+            if (ObjectUtils.isEmpty(typeName)) {
+                indexDoc = builder.index(indexName).build();
+            } else {
+                indexDoc = builder.index(indexName).type(typeName).build();
+            }
             jestClient.execute(indexDoc);
         } catch (IOException e) {
-            log.error("insertOrUpdateDocumentById failure!! error={} id={}", e.getMessage(), uniqueId);
+            log.error("insertOrUpdateDocumentById failure!! id={} error={}", id, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -112,12 +222,12 @@ public class EsService {
     /**
      * 根据主键id删除文档
      */
-    public void deleteDocumentById(String index, String type, String id) {
-        Delete delete = new Delete.Builder(id).index(index).type(type).build();
+    public void deleteDocumentById(String indexName, String typeName, String id) {
         try {
+            Delete delete = new Delete.Builder(id).index(indexName).type(typeName).build();
             jestClient.execute(delete);
         } catch (IOException e) {
-            log.error("deleteDocumentById failure!! error={} id={}", e.getMessage(), id);
+            log.error("deleteDocumentById failure!! id={} error={}", id, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -125,28 +235,15 @@ public class EsService {
     /**
      * 根据主键id获取文档
      */
-    public <T> T getDocumentById(T object, String index, String id) {
-        Get get = new Get.Builder(index, id).build();
-        T o = null;
+    public <T> T getDocumentById(T object, String indexName, String id) {
         try {
+            Get get = new Get.Builder(indexName, id).build();
             JestResult result = jestClient.execute(get);
-            o = (T) result.getSourceAsObject(object.getClass());
+            return (T) result.getSourceAsObject(object.getClass(), false);
         } catch (IOException e) {
-            log.warn("getDocumentById again!! error={} id={}", e.getMessage(), id);
+            log.error("getDocumentById again!! error={} id={}", e.getMessage(), id);
             e.printStackTrace();
-            getDocumentById(object, index, id);
         }
-        return o;
-    }
-
-    public SearchResult jsonSearchNoType(String json, String indexName) {
-        Search search = new Search.Builder(json).addIndex(indexName).build();
-        try {
-            return jestClient.execute(search);
-        } catch (Exception e) {
-            log.warn("index:{}, jsonSearchNoType failure!! error={}", indexName, e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
+        return null;
     }
 }
