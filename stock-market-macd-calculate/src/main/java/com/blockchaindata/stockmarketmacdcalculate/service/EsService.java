@@ -22,6 +22,7 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -186,10 +187,10 @@ public class EsService {
     /**
      * 批量写入
      */
-    public <T extends BaseModel> void bulkIndex(String indexName, List<T> list) {
+    public <T extends BaseModel> void bulkIndex(String indexName, Collection<T> collection) {
         try {
             Bulk.Builder bulk = new Bulk.Builder();
-            for (T o : list) {
+            for (T o : collection) {
                 Index index;
                 if (ObjectUtils.isEmpty(o.getType())) {
                     index = new Index.Builder(o).id(o.getPK()).index(indexName).build();
@@ -199,7 +200,7 @@ public class EsService {
                 bulk.addAction(index);
             }
             jestClient.execute(bulk.build());
-            log.info("bulkIndex >> indexName:{} list.size={}", indexName, list.size());
+            log.info("bulkIndex >> indexName:{} collection.size={}", indexName, collection.size());
         } catch (IOException e) {
             log.error("bulkIndex failure!! index:{} error:{} ", indexName, e.getMessage());
             e.printStackTrace();
