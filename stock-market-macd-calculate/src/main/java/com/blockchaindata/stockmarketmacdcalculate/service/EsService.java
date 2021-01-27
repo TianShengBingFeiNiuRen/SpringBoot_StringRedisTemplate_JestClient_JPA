@@ -97,7 +97,12 @@ public class EsService {
      */
     public String getIndexMappings(String indexName, String typeName) {
         try {
-            JestResult result = jestClient.execute(new GetMapping.Builder().addIndex(indexName).addType(typeName).build());
+            JestResult result;
+            if (ObjectUtils.isEmpty(typeName)) {
+                result = jestClient.execute(new GetMapping.Builder().addIndex(indexName).build());
+            } else {
+                result = jestClient.execute(new GetMapping.Builder().addIndex(indexName).addType(typeName).build());
+            }
             log.info("getIndexMappings state:{}", result.isSucceeded());
             String jsonString = result.getJsonString();
             JSONObject jsonObject = JSONObject.parseObject(jsonString);
@@ -166,8 +171,11 @@ public class EsService {
      */
     SearchResult jsonSearch(String indexName, String typeName, String json) {
         try {
-            Search search = new Search.Builder(json).addIndex(indexName).addType(typeName).build();
-            return jestClient.execute(search);
+            if (ObjectUtils.isEmpty(typeName)) {
+                return jestClient.execute(new Search.Builder(json).addIndex(indexName).build());
+            } else {
+                return jestClient.execute(new Search.Builder(json).addIndex(indexName).addType(typeName).build());
+            }
         } catch (Exception e) {
             log.error("jsonSearch failure!! error={}", e.getMessage());
             e.printStackTrace();
@@ -178,18 +186,18 @@ public class EsService {
     /**
      * 批量写入
      */
-    <T extends BaseModel> void bulkIndex(String indexName, List<T> list) {
-        Bulk.Builder bulk = new Bulk.Builder();
-        for (T o : list) {
-            Index index;
-            if (ObjectUtils.isEmpty(o.getType())) {
-                index = new Index.Builder(o).id(o.getPK()).index(indexName).build();
-            } else {
-                index = new Index.Builder(o).id(o.getPK()).index(indexName).type(o.getType()).build();
-            }
-            bulk.addAction(index);
-        }
+    public <T extends BaseModel> void bulkIndex(String indexName, List<T> list) {
         try {
+            Bulk.Builder bulk = new Bulk.Builder();
+            for (T o : list) {
+                Index index;
+                if (ObjectUtils.isEmpty(o.getType())) {
+                    index = new Index.Builder(o).id(o.getPK()).index(indexName).build();
+                } else {
+                    index = new Index.Builder(o).id(o.getPK()).index(indexName).type(o.getType()).build();
+                }
+                bulk.addAction(index);
+            }
             jestClient.execute(bulk.build());
             log.info("bulkIndex >> indexName:{} list.size={}", indexName, list.size());
         } catch (IOException e) {
@@ -201,7 +209,7 @@ public class EsService {
     /**
      * 新增或者更新文档
      */
-    public <T> void insertOrUpdateDocumentById(T o, String indexName, String typeName, String id) {
+    public <T> void insertOrUpdateDocumentById(String indexName, String typeName, String id, T o) {
         try {
             Index.Builder builder = new Index.Builder(o);
             builder.id(id);
@@ -224,8 +232,7 @@ public class EsService {
      */
     public void deleteDocumentById(String indexName, String typeName, String id) {
         try {
-            Delete delete = new Delete.Builder(id).index(indexName).type(typeName).build();
-            jestClient.execute(delete);
+            jestClient.execute(new Delete.Builder(id).index(indexName).type(typeName).build());
         } catch (IOException e) {
             log.error("deleteDocumentById failure!! id={} error={}", id, e.getMessage());
             e.printStackTrace();
@@ -235,10 +242,9 @@ public class EsService {
     /**
      * 根据主键id获取文档
      */
-    public <T> T getDocumentById(T object, String indexName, String id) {
+    public <T> T getDocumentById(String indexName, String id, T object) {
         try {
-            Get get = new Get.Builder(indexName, id).build();
-            JestResult result = jestClient.execute(get);
+            JestResult result = jestClient.execute(new Get.Builder(indexName, id).build());
             return (T) result.getSourceAsObject(object.getClass(), false);
         } catch (IOException e) {
             log.error("getDocumentById again!! error={} id={}", e.getMessage(), id);

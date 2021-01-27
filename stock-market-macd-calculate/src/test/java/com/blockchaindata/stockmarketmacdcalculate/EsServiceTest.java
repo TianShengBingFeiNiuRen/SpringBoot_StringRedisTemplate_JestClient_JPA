@@ -39,7 +39,7 @@ public class EsServiceTest {
         esTestModel.setTime(TimeUtil.FORMAT.get().format(l));
 
         System.out.println(esTestModel);
-        esService.insertOrUpdateDocumentById(esTestModel, indexName, esTestModel.getType(), esTestModel.getPK());
+        esService.insertOrUpdateDocumentById(indexName, esTestModel.getType(), esTestModel.getPK(), esTestModel);
         System.out.println("insertOrUpdateDocumentById success!!");
     }
 
@@ -55,7 +55,7 @@ public class EsServiceTest {
     public void getDocumentByIdTest() {
         String id = "World_1559008005";
         EsTestModel esTestModel = new EsTestModel();
-        esTestModel = esService.getDocumentById(esTestModel, indexName, id);
+        esTestModel = esService.getDocumentById(indexName, id, esTestModel);
         System.out.println("getDocumentById success!!");
         System.out.println(esTestModel);
     }
@@ -72,7 +72,7 @@ public class EsServiceTest {
             esTestModels.add(esTestModel);
         }
         long l = System.currentTimeMillis();
-        esService.bulkIndex(esTestModels, indexName);
+        esService.bulkIndex(indexName, esTestModels);
         System.out.println("bulkIndexTestSpendTime: " + (System.currentTimeMillis() - l) + "ms");
     }
 
@@ -90,7 +90,7 @@ public class EsServiceTest {
 
         long l = System.currentTimeMillis();
         for (EsTestModel esTestModel : esTestModels) {
-            esService.insertOrUpdateDocumentById(esTestModel, indexName, esTestModel.getType(), esTestModel.getPK());
+            esService.insertOrUpdateDocumentById(indexName, esTestModel.getType(), esTestModel.getPK(), esTestModel);
         }
         System.out.println("bulkTestSpendTime: " + (System.currentTimeMillis() - l) + "ms");
     }

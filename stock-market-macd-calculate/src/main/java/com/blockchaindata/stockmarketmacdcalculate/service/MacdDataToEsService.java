@@ -42,7 +42,7 @@ public class MacdDataToEsService implements Runnable {
             long l = System.currentTimeMillis();
             long timestampL = timestamp.get();
             if ((macdDataCopyOnWriteArrayList.size() > 3000 || (l - timestampL) > 3000) && !ObjectUtils.isEmpty(macdDataCopyOnWriteArrayList)) {
-                esService.bulkIndex(macdDataCopyOnWriteArrayList, macdDataIndex);
+                esService.bulkIndex(macdDataIndex, macdDataCopyOnWriteArrayList);
                 macdDataCopyOnWriteArrayList.clear();
                 timestamp.set(l);
             }
