@@ -58,9 +58,9 @@ public class EsService {
     public void createIndex(String indexName) {
         try {
             JestResult jestResult = jestClient.execute(new CreateIndex.Builder(indexName).build());
-            log.info("createIndex state:{}", jestResult.isSucceeded());
+            log.info("createIndex indexName:{} state:{}", indexName, jestResult.isSucceeded());
         } catch (IOException e) {
-            log.error("createIndex failure!! error={}", e.getMessage());
+            log.error("createIndex failure!! indexName:{} error={}", indexName, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -71,9 +71,9 @@ public class EsService {
     public void deleteIndex(String indexName) {
         try {
             JestResult result = jestClient.execute(new DeleteIndex.Builder(indexName).build());
-            log.info("deleteIndex state:{}", result.isSucceeded());
+            log.info("deleteIndex indexName:{} state:{}", indexName, result.isSucceeded());
         } catch (Exception e) {
-            log.error("deleteIndex failure!! error={}", e.getMessage());
+            log.error("deleteIndex failure!! indexName:{} error={}", indexName, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -91,9 +91,9 @@ public class EsService {
             } else {
                 result = jestClient.execute(new PutMapping.Builder(indexName, typeName, mapping).build());
             }
-            log.info("createIndexMappings state:{}", result.isSucceeded());
+            log.info("createIndexMappings indexName:{} typeName:{} mapping:{} state:{}", indexName, typeName, mapping, result.isSucceeded());
         } catch (Exception e) {
-            log.error("createIndexMappings failure!! error{}", e.getMessage());
+            log.error("createIndexMappings failure!! indexName:{} typeName:{} mapping:{} error{}", indexName, typeName, mapping, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -109,12 +109,12 @@ public class EsService {
             } else {
                 result = jestClient.execute(new GetMapping.Builder().addIndex(indexName).addType(typeName).build());
             }
-            log.info("getIndexMappings state:{}", result.isSucceeded());
+            log.info("getIndexMappings indexName:{} typeName:{} state:{}", indexName, typeName, result.isSucceeded());
             String jsonString = result.getJsonString();
             JSONObject jsonObject = JSONObject.parseObject(jsonString);
             return jsonObject.getJSONObject(indexName).getJSONObject("mappings").toJSONString();
         } catch (IOException e) {
-            log.error("getIndexMappings failure!! error={}", e.getMessage());
+            log.error("getIndexMappings failure!! indexName:{} typeName:{} error={}", indexName, typeName, e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -126,12 +126,12 @@ public class EsService {
     public String getIndexSettings(String indexName) {
         try {
             JestResult result = jestClient.execute(new GetSettings.Builder().addIndex(indexName).build());
-            log.info("getIndexSettings state:{}", result.isSucceeded());
+            log.info("getIndexSettings indexName:{} state:{}", indexName, result.isSucceeded());
             String jsonString = result.getJsonString();
             JSONObject jsonObject = JSONObject.parseObject(jsonString);
             return jsonObject.getJSONObject(indexName).getJSONObject("settings").toJSONString();
         } catch (IOException e) {
-            log.error("getIndexSettings failure!! error={}", e.getMessage());
+            log.error("getIndexSettings failure!! indexName:{} error={}", indexName, e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -145,9 +145,9 @@ public class EsService {
     public void updateIndexSettings(String indexName, String settings) {
         try {
             JestResult jestResult = jestClient.execute(new UpdateSettings.Builder(settings).addIndex(indexName).build());
-            log.info("updateIndexSettings state:{}", jestResult.isSucceeded());
+            log.info("updateIndexSettings indexName:{} settings:{} state:{}", indexName, settings, jestResult.isSucceeded());
         } catch (Exception e) {
-            log.error("updateIndexSettings failure!! error={}", e.getMessage());
+            log.error("updateIndexSettings failure!! indexName:{} settings:{} error={}", indexName, settings, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -166,7 +166,7 @@ public class EsService {
                 return jestClient.execute(search);
             }
         } catch (IOException e) {
-            log.error("searchSource failure!! error={}", e.getMessage());
+            log.error("searchSource failure!! indexName:{} typeName:{} error={}", indexName, typeName, e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -183,7 +183,7 @@ public class EsService {
                 return jestClient.execute(new Search.Builder(json).addIndex(indexName).addType(typeName).build());
             }
         } catch (Exception e) {
-            log.error("jsonSearch failure!! error={}", e.getMessage());
+            log.error("jsonSearch failure!! indexName:{} typeName:{} json:{} error={}", indexName, typeName, json, e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -207,7 +207,7 @@ public class EsService {
             jestClient.execute(bulk.build());
             log.info("bulkIndex >> indexName:{} collection.size={}", indexName, collection.size());
         } catch (IOException e) {
-            log.error("bulkIndex failure!! index:{} error:{} ", indexName, e.getMessage());
+            log.error("bulkIndex failure!! indexName:{} error:{} ", indexName, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -226,7 +226,7 @@ public class EsService {
             }
             jestClient.execute(index);
         } catch (IOException e) {
-            log.error("insertOrUpdateDocumentById failure!! id={} error={}", id, e.getMessage());
+            log.error("insertOrUpdateDocumentById failure!! indexName:{} typeName:{} id={} error={}", indexName, typeName, id, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -242,7 +242,7 @@ public class EsService {
                 jestClient.execute(new Delete.Builder(id).index(indexName).type(typeName).build());
             }
         } catch (IOException e) {
-            log.error("deleteDocumentById failure!! id={} error={}", id, e.getMessage());
+            log.error("deleteDocumentById failure!! indexName:{} typeName:{} id={} error={}", indexName, typeName, id, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -255,7 +255,7 @@ public class EsService {
             JestResult result = jestClient.execute(new Get.Builder(indexName, id).build());
             return (T) result.getSourceAsObject(object.getClass(), false);
         } catch (IOException e) {
-            log.error("getDocumentById again!! error={} id={}", e.getMessage(), id);
+            log.error("getDocumentById failure!! indexName:{} id={} error={}", indexName, id, e.getMessage());
             e.printStackTrace();
         }
         return null;
