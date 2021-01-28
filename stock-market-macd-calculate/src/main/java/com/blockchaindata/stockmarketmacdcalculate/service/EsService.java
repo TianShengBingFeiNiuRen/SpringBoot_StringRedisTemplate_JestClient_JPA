@@ -140,7 +140,7 @@ public class EsService {
     /**
      * 修改索引index的设置settings
      *
-     * @param settings json格式的设置settings(传值示例：{"max_result_window":"20000000"})
+     * @param settings json格式的设置settings(传值示例：{"max_result_window":"200000000"})
      */
     public void updateIndexSettings(String indexName, String settings) {
         try {
