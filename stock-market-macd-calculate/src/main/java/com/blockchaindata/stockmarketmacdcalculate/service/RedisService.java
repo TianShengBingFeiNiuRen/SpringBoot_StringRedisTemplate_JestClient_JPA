@@ -7,12 +7,13 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author Andon
- * @date 2019/5/15
+ * 2019/5/15
  */
 @Service
 public class RedisService {
@@ -62,8 +63,8 @@ public class RedisService {
     public Set<String> getHashFields(String key) {
         return hashOperations.keys(key);
     }
-    
-    public Map<String, String> getHashFieldsValues(String key){
+
+    public Map<String, String> getHashFieldsValues(String key) {
         return hashOperations.entries(key);
     }
 
